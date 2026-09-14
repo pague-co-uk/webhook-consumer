@@ -10,9 +10,9 @@ import { WebhookModule } from "./webhook/webhook.module.js";
   imports: [
     ConfigModule,
     DatabaseModule,
-    QueueModule,
     WebhookModule,
     HealthModule,
+    QueueModule
   ],
 })
 export class AppModule { }
