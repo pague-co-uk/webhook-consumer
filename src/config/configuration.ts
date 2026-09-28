@@ -90,9 +90,13 @@ export default () => ({
   // ===========================================================================
 
   webhook: {
-    clientDlrQueue:
-      process.env.CLIENT_DLR_QUEUE ??
+    clientDlrExchange:
+      process.env.ROUTING_CLIENT_DLR_EXCHANGE ??
       "sms.client.dlr",
+
+    clientDlrQueue:
+      process.env.ROUTING_CLIENT_DLR_WEBHOOK_QUEUE ??
+      "sms.client.dlr.webhook",
   },
 
   // ===========================================================================

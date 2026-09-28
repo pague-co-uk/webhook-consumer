@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 export class AppConfigService {
   constructor(
     private readonly config: ConfigService,
-  ) {}
+  ) { }
 
   // =========================================================================
   // Application
@@ -93,6 +93,11 @@ export class AppConfigService {
 
   get webhook() {
     return {
+      clientDlrExchange:
+        this.config.getOrThrow<string>(
+          "webhook.clientDlrExchange",
+        ),
+
       clientDlrQueue:
         this.config.getOrThrow<string>(
           "webhook.clientDlrQueue",

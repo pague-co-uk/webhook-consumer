@@ -12,6 +12,7 @@ export const configValidationSchema =
           "development",
           "test",
           "production",
+          "staging",
         )
         .default("development"),
 
@@ -99,10 +100,20 @@ export const configValidationSchema =
     // Webhook
     // =========================================================================
 
-    CLIENT_DLR_QUEUE:
+    ROUTING_CLIENT_DLR_EXCHANGE:
       Joi.string()
+        .trim()
+        .min(1)
         .default(
           "sms.client.dlr",
+        ),
+
+    ROUTING_CLIENT_DLR_WEBHOOK_QUEUE:
+      Joi.string()
+        .trim()
+        .min(1)
+        .default(
+          "sms.client.dlr.webhook",
         ),
 
     // =========================================================================

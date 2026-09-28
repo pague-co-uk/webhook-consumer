@@ -62,11 +62,15 @@ export class WebhookConsumer
   async onModuleInit(): Promise<void> {
     this.running = true;
 
+    const exchange =
+      this.config.webhook.clientDlrExchange;
+
     const queue =
       this.config.webhook.clientDlrQueue;
 
     this.logger.info(
       {
+        exchange,
         queue,
       },
       "Webhook consumer starting.",
@@ -77,6 +81,7 @@ export class WebhookConsumer
 
       this.logger.info(
         {
+          exchange,
           queue,
 
           queueClientState:
@@ -89,6 +94,7 @@ export class WebhookConsumer
 
       this.logger.error(
         {
+          exchange,
           queue,
 
           queueClientState:
@@ -104,6 +110,40 @@ export class WebhookConsumer
     }
 
     try {
+      await this.queue.bindQueueToExchange(
+        queue,
+        exchange,
+        "",
+        {
+          durable: true,
+        },
+      );
+
+      this.logger.info(
+        {
+          exchange,
+          queue,
+        },
+        "Webhook delivery receipt queue bound to client DLR exchange.",
+      );
+    } catch (error) {
+      recordException(error);
+
+      this.logger.error(
+        {
+          exchange,
+          queue,
+
+          err:
+            error,
+        },
+        "Webhook consumer failed to bind queue to client DLR exchange.",
+      );
+
+      throw error;
+    }
+
+    try {
       const consumer =
         await this.queue.subscribe<ClientDlr>(
           queue,
@@ -112,6 +152,7 @@ export class WebhookConsumer
             if (!this.running) {
               this.logger.warn(
                 {
+                  exchange,
                   queue,
                 },
                 "Client DLR received while webhook consumer is stopping.",
@@ -124,14 +165,11 @@ export class WebhookConsumer
               dlr,
             );
           },
-
-          {
-            noAck: false,
-          },
         );
 
       this.logger.info(
         {
+          exchange,
           queue,
 
           consumerTag:
@@ -147,6 +185,7 @@ export class WebhookConsumer
 
       this.logger.error(
         {
+          exchange,
           queue,
 
           queueClientState:
@@ -155,7 +194,7 @@ export class WebhookConsumer
           err:
             error,
         },
-        "Webhook consumer failed to bind to client DLR queue.",
+        "Webhook consumer failed to subscribe to client DLR queue.",
       );
 
       throw error;
@@ -169,11 +208,15 @@ export class WebhookConsumer
   async onModuleDestroy(): Promise<void> {
     this.running = false;
 
+    const exchange =
+      this.config.webhook.clientDlrExchange;
+
     const queue =
       this.config.webhook.clientDlrQueue;
 
     this.logger.info(
       {
+        exchange,
         queue,
       },
       "Webhook consumer stopping.",
@@ -181,6 +224,7 @@ export class WebhookConsumer
 
     this.logger.info(
       {
+        exchange,
         queue,
       },
       "Webhook consumer stopped.",
@@ -210,6 +254,10 @@ export class WebhookConsumer
           "webhook.queue":
             this.config.webhook
               .clientDlrQueue,
+
+          "webhook.exchange":
+            this.config.webhook
+              .clientDlrExchange,
         });
 
         this.logger.info(
@@ -222,6 +270,14 @@ export class WebhookConsumer
 
             status:
               dlr.status,
+
+            queue:
+              this.config.webhook
+                .clientDlrQueue,
+
+            exchange:
+              this.config.webhook
+                .clientDlrExchange,
           },
           "Client delivery receipt received.",
         );
